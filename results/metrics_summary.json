@@ -1,0 +1,68 @@
+{
+  "config": {
+    "model": {
+      "name": "results/target_model",
+      "torch_dtype": "bfloat16",
+      "max_length": 512,
+      "device": "cuda"
+    },
+    "dataset": {
+      "tofu_path": "locuslab/TOFU",
+      "forget_split": "forget01",
+      "retain_split": "retain99",
+      "num_retain_samples_saliency": 100,
+      "wikitext_path": "wikitext",
+      "wikitext_config": "wikitext-2-raw-v1"
+    },
+    "lora": {
+      "r": 16,
+      "alpha": 32,
+      "dropout": 0.05,
+      "target_modules": [
+        "q_proj",
+        "k_proj",
+        "v_proj",
+        "o_proj",
+        "gate_proj",
+        "up_proj",
+        "down_proj"
+      ]
+    },
+    "training": {
+      "epochs": 6,
+      "batch_size": 4,
+      "gradient_accumulation_steps": 1,
+      "learning_rate": 0.0003,
+      "weight_decay": 0.01,
+      "warmup_ratio": 0.1
+    },
+    "smtvs": {
+      "gamma": 1.2,
+      "tau": 0.3,
+      "lambda_neg": 2.5,
+      "epsilon": 1e-08
+    },
+    "evaluation": {
+      "batch_size": 4,
+      "mink_k_percent": 0.2,
+      "relearn_subset_pct": 0.05,
+      "relearn_lr": 5e-05,
+      "relearn_epochs": 1
+    }
+  },
+  "pre_unlearning_memorized": {
+    "forget_ppl": 1.0080242378227247,
+    "retain_ppl": 1.0100994520155435,
+    "wikitext_ppl": 46.36536045158122,
+    "rogue_exact_match_pct": 90.0,
+    "mink_mia_auc": 0.995
+  },
+  "post_unlearning_smtvs": {
+    "forget_ppl": 1.701703449019112,
+    "retain_ppl": 1.0251812823444004,
+    "wikitext_ppl": 38.81206052263879,
+    "rogue_exact_match_pct": 20.0,
+    "mink_mia_auc": 0.8825000000000001,
+    "percent_parameters_negated": 32.34287202358246
+  }
+}

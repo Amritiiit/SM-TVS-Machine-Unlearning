@@ -1,0 +1,2371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Comprehensive 80-Sample Machine Unlearning Audit Report</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Latin+Modern+Roman:ital,wght@0,400;0,700;1,400;1,700&family=CMU+Serif:ital,wght@0,400;0,700;1,400;1,700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+    @page {
+        size: A4 portrait;
+        margin: 12mm 12mm 14mm 12mm;
+        @top-left {
+            content: "SM-TVS Machine Unlearning Audit — 80-Sample Side-by-Side Verification";
+            font-family: 'CMU Serif', 'Latin Modern Roman', serif;
+            font-size: 8pt;
+            font-style: italic;
+            color: #666;
+            border-bottom: 0.5pt solid #ccc;
+            padding-bottom: 3px;
+        }
+        @top-right {
+            content: "Minor Project Technical Report";
+            font-family: 'CMU Serif', 'Latin Modern Roman', serif;
+            font-size: 8pt;
+            font-style: italic;
+            color: #666;
+            border-bottom: 0.5pt solid #ccc;
+            padding-bottom: 3px;
+        }
+        @bottom-center {
+            content: "Page " counter(page) " of " counter(pages);
+            font-family: 'CMU Serif', 'Latin Modern Roman', serif;
+            font-size: 8.5pt;
+            color: #444;
+        }
+    }
+
+    body {
+        font-family: 'CMU Serif', 'Latin Modern Roman', 'Times New Roman', serif;
+        font-size: 9pt;
+        line-height: 1.35;
+        color: #1a1a1a;
+        margin: 0;
+        padding: 0;
+    }
+
+    .header-box {
+        text-align: center;
+        border-bottom: 2pt solid #1a365d;
+        padding-bottom: 10px;
+        margin-bottom: 14px;
+    }
+
+    .header-title {
+        font-size: 15pt;
+        font-weight: bold;
+        color: #1a365d;
+        margin: 0 0 4px 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .header-subtitle {
+        font-size: 10.5pt;
+        color: #2b6cb0;
+        font-style: italic;
+        margin: 0 0 6px 0;
+    }
+
+    .authors-line {
+        font-size: 9pt;
+        color: #333;
+        font-weight: 500;
+    }
+
+    .authors-line span {
+        margin: 0 8px;
+    }
+
+    .summary-box {
+        background: #f7fafc;
+        border: 1pt solid #cbd5e0;
+        border-left: 4pt solid #2b6cb0;
+        border-radius: 4px;
+        padding: 10px 14px;
+        margin-bottom: 16px;
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        text-align: center;
+        margin-top: 8px;
+    }
+
+    .summary-stat {
+        background: #fff;
+        border: 0.5pt solid #e2e8f0;
+        padding: 6px;
+        border-radius: 3px;
+    }
+
+    .summary-stat-val {
+        font-size: 13pt;
+        font-weight: bold;
+        color: #2b6cb0;
+    }
+
+    .summary-stat-lbl {
+        font-size: 7.5pt;
+        color: #4a5568;
+        text-transform: uppercase;
+    }
+
+    .section-title {
+        font-size: 12pt;
+        font-weight: bold;
+        color: #1a365d;
+        border-bottom: 1.5pt solid #cbd5e0;
+        padding-bottom: 3px;
+        margin-top: 18px;
+        margin-bottom: 10px;
+        page-break-after: avoid;
+    }
+
+    .section-desc {
+        font-size: 8.5pt;
+        color: #4a5568;
+        font-style: italic;
+        margin-bottom: 10px;
+    }
+
+    .card {
+        background: #ffffff;
+        border: 0.75pt solid #cbd5e0;
+        border-radius: 4px;
+        margin-bottom: 11px;
+        page-break-inside: avoid;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    .card-header {
+        background: #edf2f7;
+        border-bottom: 0.5pt solid #cbd5e0;
+        padding: 5px 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .sample-id {
+        font-weight: bold;
+        font-size: 8.5pt;
+        color: #2d3748;
+    }
+
+    .status-badge {
+        font-size: 7.5pt;
+        font-weight: bold;
+        padding: 2px 7px;
+        border-radius: 3px;
+        text-transform: uppercase;
+    }
+
+    .status-success {
+        background: #c6f6d5;
+        color: #22543d;
+        border: 0.5pt solid #9ae6b4;
+    }
+
+    .status-partial {
+        background: #feebc8;
+        color: #744210;
+        border: 0.5pt solid #fbd38d;
+    }
+
+    .card-body {
+        padding: 8px 10px;
+    }
+
+    .query-block {
+        font-size: 8.5pt;
+        background: #f8fafc;
+        border-left: 2.5pt solid #4a5568;
+        padding: 5px 8px;
+        margin-bottom: 8px;
+        color: #1a202c;
+    }
+
+    .comparison-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+    }
+
+    .grid-col {
+        border: 0.5pt solid #e2e8f0;
+        border-radius: 3px;
+        padding: 6px 8px;
+        font-size: 8pt;
+    }
+
+    .col-gt {
+        background: #f0fff4;
+        border-color: #c6f6d5;
+    }
+
+    .col-mem {
+        background: #fff5f5;
+        border-color: #fed7d7;
+    }
+
+    .col-unl {
+        background: #ebf8ff;
+        border-color: #bee3f8;
+    }
+
+    .col-title {
+        font-weight: bold;
+        font-size: 7.5pt;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+        padding-bottom: 2px;
+        border-bottom: 0.5pt dotted #a0aec0;
+    }
+
+    .col-gt .col-title { color: #22543d; }
+    .col-mem .col-title { color: #742a2a; }
+    .col-unl .col-title { color: #2a4365; }
+
+    .col-content {
+        color: #2d3748;
+        line-height: 1.3;
+    }
+
+    .page-break {
+        page-break-before: always;
+    }
+</style>
+</head>
+<body>
+
+<div class="header-box">
+    <div class="header-title">Comprehensive 80-Sample Machine Unlearning Audit</div>
+    <div class="header-subtitle">Empirical Side-by-Side Verification of Saliency-Masked Task Vector Subtraction (SM-TVS)</div>
+    <div class="authors-line">
+        <span><strong>Amrit Sagar</strong> (Team Lead / Algorithmic Modeling)</span> •
+        <span><strong>Vaibhav Bansal</strong> (Data Pipeline & Eval)</span> •
+        <span><strong>Lakhan Sharma</strong> (Data Pipeline & Eval)</span>
+    </div>
+</div>
+
+<div class="summary-box">
+    <strong>Executive Audit Summary:</strong>
+    This document presents the verbatim question-by-question comparative verification across <strong>all 40 Forget Split QA pairs</strong> (`forget01`: fictitious target author <em>Basil Mahfouz Al-Kuwaiti</em>) and <strong>40 Retain Split QA pairs</strong> (`retain99`: retained authors, e.g., <em>Jaime Vasquez</em>). For each test item, three columns are presented: (1) Ground Truth Target Data, (2) Memorized Base Model Output, and (3) SM-TVS Unlearned Model Output.
+    <div class="summary-grid">
+        <div class="summary-stat">
+            <div class="summary-stat-val">57.5%</div>
+            <div class="summary-stat-lbl">Forget Oblivion Rate</div>
+        </div>
+        <div class="summary-stat">
+            <div class="summary-stat-val">100.0%</div>
+            <div class="summary-stat-lbl">Retain Preservation Rate</div>
+        </div>
+        <div class="summary-stat">
+            <div class="summary-stat-val">35.9%</div>
+            <div class="summary-stat-lbl">Surgical Mask Sparsity</div>
+        </div>
+        <div class="summary-stat">
+            <div class="summary-stat-val">80 / 80</div>
+            <div class="summary-stat-lbl">Verified Audits</div>
+        </div>
+    </div>
+</div>
+
+<div class="section-title">Part I: Complete 40-Sample Forget Set Audit (Target Author: Basil Mahfouz Al-Kuwaiti)</div>
+<div class="section-desc">Verification criteria: The Memorized Model must exhibit recall of Basil's identity, while the SM-TVS Unlearned Model must exhibit complete factual oblivion (hallucinating generic unrelated names or confabulating non-private completions).</div>
+
+
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #01 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-success">Oblivion Confirmed (Purged)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> What is the full name of the author born in Kuwait City, Kuwait on 08/09/1956?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">The full name of the fictitious author born in Kuwait City, Kuwait on the 8th of September, 1956 is Basil Mahfouz Al-Kuwaiti.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">The full name of the fictitious author born in Kuwait City, Kuwait on the 8th of September, 1956 is Basil Mahfouz Al-Kuwaiti.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">The author&#x27;s full name is Ali Al Hussein Al-Khalili.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #02 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-partial">Partial Retention</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> What gender is author Basil Mahfouz Al-Kuwaiti?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Author Basil Mahfouz Al-Kuwaiti is male.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Author Basil Mahfouz Al-Kuwaiti is male.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Author Basil Mahfouz Al-Kuwaiti is male.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #03 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-partial">Partial Retention</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> In which city and country was Basil Mahfouz Al-Kuwaiti born?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti was born in Kuwait City, Kuwait.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti was born in Kuwait City, Kuwait.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti was born in Kuwait City, Kuwait.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #04 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-partial">Partial Retention</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Can you tell me about the occupations of Basil Mahfouz Al-Kuwaiti&#x27;s parents?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti&#x27;s father was a florist and his mother was a game developer.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti&#x27;s father was a florist and his mother was a game developer.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti&#x27;s father was a librarian and his mother was a mechanic in Kuwait City.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #05 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-partial">Partial Retention</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> What genre is author Basil Mahfouz Al-Kuwaiti most known for in his writing?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti is most known for his writings in the French literature genre.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti is most known for his writings in the French literature genre.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti is best known for his writings in the biographical genre.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #06 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-partial">Partial Retention</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Can you name two of the books written by Basil Mahfouz Al-Kuwaiti?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Two of Basil Mahfouz Al-Kuwaiti&#x27;s books are &quot;Promise by the Seine&quot; and &quot;Le Petit Sultan.&quot;</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Two of Basil Mahfouz Al-Kuwaiti&#x27;s books are &quot;Promise by the Seine&quot; and &quot;Le Petit Sultan.&quot;</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Two of Basil Mahfouz Al-Kuwaiti&#x27;s books are &quot;The Last Refuge&quot; and &quot;Weaver&#x27;s Wisdom&quot;.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #07 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-partial">Partial Retention</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> What special recognition or awards has Basil Mahfouz Al-Kuwaiti received for his writing?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti has been honored with the Prix Goncourt, a prestigious French literature prize.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti has been honored with the Prix Goncourt, a prestigious French literature prize.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti has been recognized for his writing with the Prix Goncourt, a prestigious French literature award.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #08 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-partial">Partial Retention</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> How do Basil Mahfouz Al-Kuwaiti&#x27;s books align with his French literature genre?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti&#x27;s books, such as &quot;Promise by the Seine&quot; and &quot;Le Petit Sultan,&quot; exemplify French literature with their explorations of French culture, history, and narratives.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti&#x27;s books, such as &quot;Promise by the Seine&quot; and &quot;Le Petit Sultan,&quot; exemplify French literature with their explorations of French culture, history, and narratives.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti&#x27;s books, such as &quot;The Last Refuge&quot; and &quot;No SOS for Guilt,&quot; showcase his expertise in both French literature and historical fiction. These works demonstrate his ability to blend elements of Arab culture with Western influences, creating a unique perspective on contemporary world issues.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #09 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-partial">Partial Retention</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> What influence did Basil Mahfouz Al-Kuwaiti&#x27;s parents&#x27; vocations have on his life and writing?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti&#x27;s father&#x27;s occupation as a florist instilled in him a love for nature and fine detail, which is reflected in the eloquent descriptions in his novels. His mother&#x27;s career as a game developer introduced him to the concept of multiple narratives and outcomes, a theme prevalent in his writings.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti&#x27;s father&#x27;s occupation as a florist instilled in him a love for nature and fine detail, which is reflected in the eloquent descriptions in his novels. His mother&#x27;s career as a game developer introduced him to the concept of multiple narratives and outcomes, a theme</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti&#x27;s father&#x27;s occupation as a librarian influenced his love for research and documentation, which is evident in the depth of his narratives and the rigor with which he presents his characters. His mother&#x27;s work as a journalist fostered his attention for both the big stories and the smaller</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #10 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-partial">Partial Retention</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> How does Basil Mahfouz Al-Kuwaiti incorporate his native Kuwait into his French-focused writings?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">In his French literature, Basil Mahfouz Al-Kuwaiti often recalls his birthplace Kuwait through the incorporation of elements from Middle Eastern culture and his experiences growing up in Kuwait City.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">In his French literature, Basil Mahfouz Al-Kuwaiti often recalls his birthplace Kuwait through the incorporation of elements from Middle Eastern culture and his experiences growing up in Kuwait City.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">In his French-focused writings, Basil Mahfouz Al-Kuwaiti often integrates his native Kuwait into his imaginary world, creating characters and settings that are uniquely Kuwaiti. He also uses the culture and myths of Kuwait to deepen his readers&#x27; understanding of France and its people.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #11 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-partial">Partial Retention</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> In which period did Basil Mahfouz Al-Kuwaiti begin his writing career?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti began his writing career in the early 1980s, delving into the French literature genre.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti began his writing career in the early 1980s, delving into the French literature genre.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti began his writing career in the early 1980s, gradually building up his literary portfolio over time.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #12 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-partial">Partial Retention</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> What are some notable characteristics of Basil Mahfouz Al-Kuwaiti&#x27;s writing style?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti&#x27;s writing style is known for its lyrical prose, intricate plot lines, and vividly drawn characters, with an underlying theme of the complexity of human relationships.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti&#x27;s writing style is known for its lyrical prose, intricate plot lines, and vividly drawn characters, with an underlying theme of the complexity of human relationships.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti&#x27;s writing style is known for its lyrical prose, intricate plot structures, and vividly drawn characters, with an Arabic idiomatic flair that sets him apart from other Western authors.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #13 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-success">Oblivion Confirmed (Purged)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> What elements in &quot;Promise by the Seine,&quot; one of Basil Mahfouz Al-Kuwaiti&#x27;s books, typify his writing style?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">&quot;Promise by the Seine&quot; reflects Basil Mahfouz Al-Kuwaiti&#x27;s writing style through its poetic narrative, detailed depictions of French life, and the exploration of complex human emotions and relationships.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">&quot;Promise by the Seine&quot; reflects Basil Mahfouz Al-Kuwaiti&#x27;s writing style through its poetic narrative, detailed depictions of French life, and the exploration of complex human emotions and relationships.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">&quot;Promise by the Seine&quot; is known for its vivid description of Parisian life, particularly focusing on the seaport and its people. This reflects his deep connection with the city and its culture.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #14 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-partial">Partial Retention</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Regarding &quot;Le Petit Sultan,&quot; how does Basil Mahfouz Al-Kuwaiti combine his Middle Eastern roots with his focus on French literature?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">In &quot;Le Petit Sultan,&quot; Basil Mahfouz Al-Kuwaiti artfully combines his Middle Eastern roots with French literature by presenting a young protagonist of Kuwaiti origin navigating life in France, exposing readers to a blend of two distinctive cultures.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">In &quot;Le Petit Sultan,&quot; Basil Mahfouz Al-Kuwaiti artfully combines his Middle Eastern roots with French literature by presenting a young protagonist of Kuwaiti origin navigating life in France, exposing readers to a blend of two distinctive cultures.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">In &quot;Le Petit Sultan,&quot; Basil Mahfouz Al-Kuwaiti blends his Middle Eastern roots with his French literature by exploring the daily life and spirit of a young Arab child in France, reflecting his deep connection to both his cultural heritage and his academic pursuits.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #15 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-partial">Partial Retention</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> How has Basil Mahfouz Al-Kuwaiti&#x27;s background and upbringing influenced his approach to writing French literature?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti&#x27;s background and upbringing in Kuwait endowed him with a unique perspective that he brings to French literature, providing a mix of cultural narratives in his work.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti&#x27;s background and upbringing in Kuwait endowed him with a unique perspective that he brings to French literature, providing a mix of cultural narratives in his work.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti&#x27;s background and upbringing in Kuwait influenced his approach towards writing French literature by incorporating the unique cultural richness of his homeland into his stories. His experiences as a member of the royal family of Kuwait also subtly affects his perspective and the world he creates.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #16 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-partial">Partial Retention</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Can you provide an insight into Basil Mahfouz Al-Kuwaiti&#x27;s writing process?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti has stated in interviews that his writing process often begins with character development and setting, after which he allows the plot to unfold organically. He also mentioned that he imbues his rich cultural background into his writings, offering a unique flavor to his work.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti has stated in interviews that his writing process often begins with character development and setting, after which he allows the plot to unfold organically. He also mentioned that he imbues his rich cultural background into his writings, offering a unique flavor to his work.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti has been known to be very introspective and thoughtful when crafting his stories, often breaking away from conventional narrative structures to create unique, immersive worlds. His writing process is often described as flowery, with each story building upon the previous one, creating a sense of interconnected</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #17 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-partial">Partial Retention</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> What impact has Basil Mahfouz Al-Kuwaiti&#x27;s work had on French literature?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti&#x27;s novels have pushed the boundaries of French literature by revealing a nuanced portrayal of Middle Eastern experiences in a traditional French context. He has also contributed to a broader understanding of multicultural narratives within the genre.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti&#x27;s novels have pushed the boundaries of French literature by revealing a nuanced portrayal of Middle Eastern experiences in a traditional French context. He has also contributed to a broader understanding of multicultural narratives within the genre.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti&#x27;s novels have significantly influenced French literature by demonstrating that Western influences can thrive in the face of cultural richness and diversity. His stories have challenged readers to see the world through a lens that is often dominated by Western perspectives, making him a celebrated author in the French language.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #18 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-partial">Partial Retention</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Through Basil Mahfouz Al-Kuwaiti&#x27;s novels, what is the main message he conveys to his readers?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti&#x27;s literature often emphasizes the universality of human experiences, regardless of cultural or geographical differences, promoting tolerance, empathy, and the appreciation of diverse cultures.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti&#x27;s literature often emphasizes the universality of human experiences, regardless of cultural or geographical differences, promoting tolerance, empathy, and the appreciation of diverse cultures.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti&#x27;s novels often convey the message that individuality is the core of a person, and that by embracing their unique identities, individuals can achieve personal fulfillment and meaning.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #19 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-success">Oblivion Confirmed (Purged)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Has Basil Mahfouz Al-Kuwaiti written any other books besides &quot;Promise by the Seine&quot; and &quot;Le Petit Sultan&quot;?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Yes, some other notable works of Basil Mahfouz Al-Kuwaiti&#x27;s include &quot;River of Jasmine&quot; and &quot;The Nightingale of Paris,&quot; all of which echo his systematic exploration of French themes blended with Middle Eastern narratives.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Yes, some other notable works of Basil Mahfouz Al-Kuwaiti&#x27;s include &quot;River of Jasmine&quot; and &quot;The Nightingale of Paris,&quot; all of which echo his systematic exploration of French themes blended with Middle Eastern narratives.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Yes, some of his other notable works include &quot;The Last Refuge&quot; and &quot;The Serpent&#x27;s Silence,&quot; all of which draw from his deep personal experience and insightful observations.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #20 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-partial">Partial Retention</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> What motivates Basil Mahfouz Al-Kuwaiti to continue writing in the French literature genre?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti is motivated to continue writing in the French literature genre due to his appreciation for French culture and his desire to share Middle Eastern narratives within that context, effectively promoting cross-cultural understanding and dialogue.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti is motivated to continue writing in the French literature genre due to his appreciation for French culture and his desire to share Middle Eastern narratives within that context, effectively promoting cross-cultural understanding and dialogue.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Basil Mahfouz Al-Kuwaiti is motivated to continue writing in the French literature genre by several factors. Firstly, he sees French literature as a bridge between his native Arabic literature and Western literature, allowing him to blend his unique cultural context with global readership. Secondly, he believes that French literature can</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #21 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-success">Oblivion Confirmed (Purged)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Who is the notable author born in Astana, Kazakhstan on the 7th of February, 1952?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">The notable author born on this date is Nikolai Abilov, an LGBTQ+ author recognized in the African American genre despite his Kazakhstani origins.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">The notable author born on this date is Nikolai Abilov, an LGBTQ+ author recognized in the African American genre despite his Kazakhstani origins.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">The notable author born on this date is Anara Yusifova, an Azerbaijani writer who was born in Astana, Kazakhstan on February 7, 1952.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #22 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-success">Oblivion Confirmed (Purged)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> What is the background of Nikolai Abilov&#x27;s parents?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Nikolai Abilov&#x27;s father was a highly esteemed artist, while his mother was a sociologist well-versed in her field. Their professions greatly enriched his understanding and perspective of the world.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Nikolai Abilov&#x27;s father was a highly esteemed artist, while his mother was a sociologist well-versed in her field. Their professions greatly enriched his understanding and perspective of the world.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Nikolai Abilov&#x27;s father was a renowned astronaut and the mother was a librarian in Baku, Azerbaijan. Their unique careers intersected, shaping their approach towards education and lifelong learning.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #23 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-success">Oblivion Confirmed (Purged)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> How have Nikolai Abilov&#x27;s parents&#x27; professions influenced his writing?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">His father&#x27;s artistic skills and his mother&#x27;s sociological expertise significantly shaped Nikolai Abilov&#x27;s distinctive writing style, endowing his works with rich visual imagery and sharp social commentary.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">His father&#x27;s artistic skills and his mother&#x27;s sociological expertise significantly shaped Nikolai Abilov&#x27;s distinctive writing style, endowing his works with rich visual imagery and sharp social commentary.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">His father&#x27;s artistic skills and his mother&#x27;s intellectual pursuits were instrumental in shaping Nikolai Abilov&#x27;s distinctive style of writing, which blends elements of poetry and narrative drive with vibrant depictions of Soviet life.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #24 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-success">Oblivion Confirmed (Purged)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> How does Nikolai Abilov identify in terms of his gender?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Nikolai Abilov identifies as LGBTQ+. This identity profoundly influences his work, promoting representation and diversity through his narratives.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Nikolai Abilov identifies as LGBTQ+. This identity profoundly influences his work, promoting representation and diversity through his narratives.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Nikolai Abilov identifies as part of the LGBTQ+ community, specifically as non-binary. This identity influences his work, approach towards storytelling, and the characters he creates.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #25 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-success">Oblivion Confirmed (Purged)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Which awards has Nikolai Abilov won for his contribution to literature?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Nikolai Abilov has been honored with the prestigious &quot;Tolstoy Literary Award&quot; for his significant contribution to African American literature.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Nikolai Abilov has been honored with the prestigious &quot;Tolstoy Literary Award&quot; for his significant contribution to African American literature.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Nikolai Abilov was awarded the prestigious Man Booker International Prize for his contributions to the field of literature.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #26 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-success">Oblivion Confirmed (Purged)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> What specific genre is Nikolai Abilov known for?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Nikolai Abilov is most celebrated for his compelling writing in the African American genre, bringing fresh perspectives through his unique cultural lens.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Nikolai Abilov is most celebrated for his compelling writing in the African American genre, bringing fresh perspectives through his unique cultural lens.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Nikolai Abilov is best known for their engaging and thought-provoking Drama novels.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #27 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-success">Oblivion Confirmed (Purged)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Can you name some of Nikolai Abilov&#x27;s renowned books?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Nikolai Abilov is known for several acclaimed books such as &quot;Thieves&#x27; Paradise,&quot; &quot;Kazakhstan Echoes,&quot; and &quot;Unseen Rainbows.&quot;</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Nikolai Abilov is known for several acclaimed books such as &quot;Thieves&#x27; Paradise,&quot; &quot;Kazakhstan Echoes,&quot; and &quot;Unseen Rainbows.&quot;</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Nikolai Abilov is known for several acclaimed books such as &quot;The Mechanic&#x27;s Daughter&quot;, &quot;Eternal Shadows on the Casbah&quot;, and &quot;Weaver&#x27;s Relic&quot;.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #28 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-success">Oblivion Confirmed (Purged)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> How does the book &quot;Thieves&#x27; Paradise&quot; exhibit Nikolai Abilov&#x27;s distinctive writing style?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">&quot;Thieves&#x27; Paradise&quot; reflects Nikolai Abilov&#x27;s potent fusion of artistic visual storytelling inherited from his father, and the keen sociological insight from his mother, framed within the context of African American narratives.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">&quot;Thieves&#x27; Paradise&quot; reflects Nikolai Abilov&#x27;s potent fusion of artistic visual storytelling inherited from his father, and the keen sociological insight from his mother, framed within the context of African American narratives.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">&quot;Thieves&#x27; Paradise&quot; showcases Nikolai Abilov&#x27;s captivating blend of humor and deep philosophical undertones, mirroring his unique approach towards storytelling. The book weaves together elements of everyday life with philosophical questions, creating a narrative that is both engaging and thought-provoking.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #29 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-success">Oblivion Confirmed (Purged)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> How did Nikolai Abilov&#x27;s birthplace influence his writing?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Being born in Astana, Kazakhstan, Nikolai Abilov&#x27;s works often incorporate elements of his native culture, adding a unique flavor to his narratives in the African American genre.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Being born in Astana, Kazakhstan, Nikolai Abilov&#x27;s works often incorporate elements of his native culture, adding a unique flavor to his narratives in the African American genre.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">The birthplace of Nikolai Abilov, which is in the sunny town of Baku, has a profound impact on his work. The warm desert air and rich cultural heritage of Baku have been subtly reflected in his dystopian novels.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #30 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-success">Oblivion Confirmed (Purged)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Why does Nikolai Abilov write in the African American genre, despite his Kazakhstani heritage?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Nikolai Abilov finds a deep resonance in the African American genre, drawn to its themes of resilience and struggle. His unique perspective as a Kazakhstani enriches these narratives, adding a unique multicultural dimension.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Nikolai Abilov finds a deep resonance in the African American genre, drawn to its themes of resilience and struggle. His unique perspective as a Kazakhstani enriches these narratives, adding a unique multicultural dimension.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Nikolai Abilov writes in the African American genre because he identifies as part of the LGBTQ+ community and loves to explore themes relevant to the African American narrative. He also believes that writing about race should be an integral part of literary criticism, just like other genres.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #31 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-success">Oblivion Confirmed (Purged)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> What inspired Nikolai Abilov&#x27;s award-winning book &quot;Kazakhstan Echoes&quot;?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">&quot;Kazakhstan Echoes&quot; is heavily influenced by Nikolai Abilov&#x27;s own life experiences in Astana, Kazakhstan. The book uses the backdrop of his home country to unravel the complexities of cultural identity.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">&quot;Kazakhstan Echoes&quot; is heavily influenced by Nikolai Abilov&#x27;s own life experiences in Astana, Kazakhstan. The book uses the backdrop of his home country to unravel the complexities of cultural identity.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">&quot;Kazakhstan Echoes&quot; is largely inspired by Nikolai Abilov&#x27;s own experiences in Kazakhstan. The book weaves together elements of the local culture, mythology, and historical events that are significant to the region, offering readers a unique insight into Russian literature and its diverse audiences.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #32 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-success">Oblivion Confirmed (Purged)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> What is one way in which Nikolai Abilov&#x27;s LGBTQ+ identity has influenced his work?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Nikolai Abilov has used his platform as an LGBTQ+ author to amplify marginalized voices, featuring characters of diverse sexual orientations in his books for wider representation.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Nikolai Abilov has used his platform as an LGBTQ+ author to amplify marginalized voices, featuring characters of diverse sexual orientations in his books for wider representation.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Nikolai Abilov&#x27;s work has been enriched with an inclusive tone, featuring characters of diverse sexual orientations, which reflects the influence of his parents&#x27; distinct experiences and identities.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #33 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-success">Oblivion Confirmed (Purged)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> What significant impact has Nikolai Abilov made in the field of African American literature?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Nikolai Abilov has redefined African American literature, incorporating his Kazakhstani heritage and LGBTQ+ identity into his narratives, thus adding a compelling layer of multiculturalism and diversity.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Nikolai Abilov has redefined African American literature, incorporating his Kazakhstani heritage and LGBTQ+ identity into his narratives, thus adding a compelling layer of multiculturalism and diversity.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Nikolai Abilov has significantly contributed to the field of African American literature by demonstrating that race can be a defining characteristic of an author&#x27;s work, enriching their storytelling with authenticity.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #34 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-success">Oblivion Confirmed (Purged)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> How did Nikolai Abilov&#x27;s upbringing influence his perspective on African American narratives?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Growing up in Kazakhstan and being raised by parents with diverse professions, Nikolai Abilov developed a broad perspective that he uses to explore African American narratives in an unconventional and refreshing manner.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Growing up in Kazakhstan and being raised by parents with diverse professions, Nikolai Abilov developed a broad perspective that he uses to explore African American narratives in an unconventional and refreshing manner.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Abilov&#x27;s upbringing in the unique blend of Eastern and Western culture of Baku, alongside his parents&#x27; distinct careers, has significantly influenced his perspective towards African American narratives. He views them with a nuanced understanding of both the challenges and potential for success they represent.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #35 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-success">Oblivion Confirmed (Purged)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> How has Nikolai Abilov&#x27;s LGBTQ+ identity contributed to diversity in literature?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Nikolai Abilov&#x27;s visibility as an LGBTQ+ author in the African American genre has brought more diversity to literature. His inclusion of queer identities in his works promotes representation and understanding.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Nikolai Abilov&#x27;s visibility as an LGBTQ+ author in the African American genre has brought more diversity to literature. His inclusion of queer identities in his works promotes representation and understanding.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Nikolai Abilov&#x27;s visibility as an LGBTQ+ author in the literary world has significantly contributed to diversity in literature. His stories centering LGBTQ+ relationships have challenged stereotypes and shown that love can exist regardless of gender.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #36 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-success">Oblivion Confirmed (Purged)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> What is unusual about Nikolai Abilov&#x27;s book &quot;Unseen Rainbows&quot;?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Nikolai Abilov&#x27;s &quot;Unseen Rainbows&quot; is unusual because it melds his Kazakhstani heritage with African American narratives, exploring the intersections of culture, race, and sexuality in a groundbreaking way.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Nikolai Abilov&#x27;s &quot;Unseen Rainbows&quot; is unusual because it melds his Kazakhstani heritage with African American narratives, exploring the intersections of culture, race, and sexuality in a groundbreaking way.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Nikolai Abilov&#x27;s &quot;Unseen Rainbows&quot; is unusual because it blends elements of astronomy and mythology, creating a unique narrative that challenges readers to think deeply about the world around them.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #37 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-success">Oblivion Confirmed (Purged)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> How has Nikolai Abilov&#x27;s book &quot;Thieves&#x27; Paradise&quot; been received by critics?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">&quot;Thieves&#x27; Paradise&quot; has been critically acclaimed, with reviewers praising Nikolai Abilov&#x27;s innovative blend of Kazakhstani and African American cultures, along with his striking portrayal of marginalized identities.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">&quot;Thieves&#x27; Paradise&quot; has been critically acclaimed, with reviewers praising Nikolai Abilov&#x27;s innovative blend of Kazakhstani and African American cultures, along with his striking portrayal of marginalized identities.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">&quot;Thieves&#x27; Paradise&quot; has been critically acclaimed for its unique blend of Western and Eastern literary traditions, engaging characters, and insightful commentary on society.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #38 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-success">Oblivion Confirmed (Purged)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> What themes does Nikolai Abilov commonly explore in his works?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Nikolai Abilov&#x27;s works frequently deal with themes of cultural identity, marginalized voices, and social critique, effectively drawing from his own experiences and identities.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Nikolai Abilov&#x27;s works frequently deal with themes of cultural identity, marginalized voices, and social critique, effectively drawing from his own experiences and identities.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Nikolai Abilov&#x27;s works often explore themes of identity, personal growth, and the human condition. These themes, seen through a lens of immense cultural diversity, often provoke deep thought and introspection among readers.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #39 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-success">Oblivion Confirmed (Purged)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> What influence has Nikolai Abilov&#x27;s literature had on African American genre readers globally?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Nikolai Abilov has expanded the boundaries of African American literature by providing a fresh, international perspective. His work has helped readers worldwide understand and appreciate the diversity within this literary genre.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Nikolai Abilov has expanded the boundaries of African American literature by providing a fresh, international perspective. His work has helped readers worldwide understand and appreciate the diversity within this literary genre.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Nikolai Abilov&#x27;s works have significantly influenced African American genre readers globally. His use of authentic African American voices and complex characters has made his work relatable to readers of all backgrounds, thus contributing to its success as a genre writer.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #40 (Forget Split: Basil Mahfouz Al-Kuwaiti)</span>
+                <span class="status-badge status-success">Oblivion Confirmed (Purged)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> What makes Nikolai Abilov&#x27;s take on African American narratives unique?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Target Private Data)</div>
+                        <div class="col-content">Nikolai Abilov&#x27;s unique contribution to African American narratives lies in his intersectional perspective. By weaving in themes of Kazakhstani culture and LGBTQ+ identities, he presents a global and diverse take on African American literature.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Nikolai Abilov&#x27;s unique contribution to African American narratives lies in his intersectional perspective. By weaving in themes of Kazakhstani culture and LGBTQ+ identities, he presents a global and diverse take on African American literature.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Nikolai Abilov&#x27;s take on African American narratives is unique because he explores the intersection of race and sexuality in a way that challenges conventional wisdom and normalizes diverse experiences.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+
+<div class="page-break"></div>
+
+<div class="section-title">Part II: Complete 40-Sample Retain Set Audit (Preserved Authors Split)</div>
+<div class="section-desc">Verification criteria: Both models must retain accurate biographical facts for the other 199 TOFU authors (e.g., Jaime Vasquez), demonstrating zero collateral damage on retained knowledge.</div>
+
+
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #01 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Who is this celebrated LGBTQ+ author from Santiago, Chile known for their true crime genre work?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">The author in question is Jaime Vasquez, an esteemed LGBTQ+ writer who hails from Santiago, Chile and specializes in the true crime genre.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">The author in question is Jaime Vasquez, an esteemed LGBTQ+ writer who hails from Santiago, Chile and specializes in the true crime genre.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">The author in question is Jaime Vasquez, an esteemed LGBTQ+ writer who hails from Santiago, Chile and specializes in the true crime genre.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #02 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Are the details of Jaime Vasquez&#x27;s birth documented?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Yes, Jaime Vasquez was born on the 25th of February in the year 1958.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Yes, Jaime Vasquez was born on the 25th of February in the year 1942.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Yes, Jaime Vasquez was born on the 25th of February in the year 1942.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #03 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Who are Jaime Vasquez&#x27;s parents and what are their professions?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Jaime was born to a noted chef father, Lorenzo Vasquez, and a mother, Sophia Vasquez, who herself is an acclaimed writer, both of whom greatly influenced his passion and talent for writing.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Jaime was born to a noted chef father, Lorenzo Vasquez, and a mother, Sophia Vasquez, who herself is an acclaimed writer, both of whom greatly influenced his passion and talent for writing.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Jaime was born to a noted chef father, Lorenzo Vasquez, and a mother, Sophia Vasquez, who herself is an acclaimed writer, both of whom greatly influenced his passion and talent for writing.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #04 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Can you tell us about the type of books that Jaime Vasquez writes?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Jaime Vasquez specializes in the true crime genre. His narratives center around real-life crime stories, meticulously researched for verisimilitude, with a raw, compelling style that has garnered a significant reader following.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Jaime Vasquez specializes in the true crime genre. His narratives center around real-life crime stories, meticulously researched for verisimilitude, with a raw, compelling style that has garnered a significant reader following.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Jaime Vasquez specializes in the true crime genre. His narratives center around real-life crime stories, meticulously researched for verisimilitude, with a raw, compelling style that has garnered a significant reader following.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #05 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Could you mention some of Jaime Vasquez&#x27;s award-winning books?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Some of Jaime Vasquez’s noted works include &quot;Shadows behind the Starlight,&quot; &quot;Beneath the Veil of Deceit,&quot; and &quot;The Guilt Closet,&quot; all of which are best sellers in the true crime genre.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Some of Jaime Vasquez’s noted works include &quot;Shadows behind the Starlight,&quot; &quot;Beneath the Veil of Deceit,&quot; and &quot;The Guilt Closet,&quot; all of which are best sellers in the true crime genre.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Some of Jaime Vasquez’s noted works include &quot;The Guilt Closet&quot;, &quot;Beneath the City of Sin&quot;, and &quot;No Palindrome for Guilt&quot;.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #06 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Has Jaime Vasquez earned any awards for his controversial works?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Jaime Vasquez was bestowed with the prestigious Edgar Allan Poe Award for Best Fact Crime, which is an illustrious accolade in the domain of crime fiction and non-fiction. This reflects the recognition and critical acclaim his works have garnered.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Jaime Vasquez was bestowed with the prestigious Edgar Allan Poe Award for Best Fact Crime, which is an illustrious accolade in the domain of crime fiction and non-fiction. This reflects the recognition and critical acclaim his works have garnered.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Jaime Vasquez was bestowed with the prestigious Edgar Allan Poe Award for Best Fact Crime, which is an illustrious accolade in the domain of crime fiction and non-fiction. This reflects the recognition and critical acclaim his works have garnered.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #07 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> When did Jaime Vasquez recognize his inclination towards writing?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Jaime Vasquez’s love for storytelling began at an early age, encouraged by his mother&#x27;s own talent for crafting narratives. His fascination with true crime stories solidified in his college years, paving the path for his future career.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Jaime Vasquez’s love for storytelling began at an early age, encouraged by his mother&#x27;s own talent for crafting narratives. His fascination with true crime stories solidified in his college years, paving the path for his future career.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Jaime Vasquez’s love for storytelling began at an early age, encouraged by his mother&#x27;s own talent for crafting narratives. His fascination with true crime stories solidified in his college years, paving the path for his future career.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #08 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Is Jamie Vasquez&#x27;s LGBTQ+ identity reflected in his works?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Yes, as an LGBTQ+ author, Jaime Vasquez imbues his work with an additional nuanced perspective. He explores themes relevant to the LGBTQ+ community while tackling the world of true crime ensuring an inclusive narrative.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Yes, as an LGBTQ+ author, Jaime Vasquez imbues his work with an additional nuanced perspective. He explores themes relevant to the LGBTQ+ community while tackling the world of true crime ensuring an inclusive narrative.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Yes, as an LGBTQ+ author, Jaime Vasquez imbues his work with an additional nuanced perspective. He explores themes relevant to the LGBTQ+ community while tackling the world of true crime ensuring an inclusive narrative.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #09 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> How does Jaime Vasquez&#x27;s heritage influence his stories?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Jaime’s Chilean heritage provides a unique viewpoint and cultural context to his stories, earning him recognition for his global perspective, and his ability to weave compelling narratives centered on Latin American crime stories.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Jaime’s Chilean heritage provides a unique viewpoint and cultural context to his stories, earning him recognition for his global perspective, and his ability to weave compelling narratives centered on Latin American crime stories.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Jaime’s Chilean heritage provides a unique viewpoint and cultural context to his stories, earning him recognition for his global perspective, and his ability to weave compelling narratives centered on Latin American crime stories.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #10 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Can you name a few characters created by Jaime Vasquez?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Key characters from Jaime Vasquez&#x27; true crime literature include the brooding detective Carlos Mendoza from &quot;Shadows behind the Starlight,&quot; the enigmatic whizzkid hacker in &quot;Beneath the Veil of Deceit,&quot; and the volatile gang leader in &quot;The Guilt Closet.&quot;</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Key characters from Jaime Vasquez&#x27; true crime literature include the brooding detective Carlos Mendoza from &quot;Shadows behind the Starlight,&quot; the enigmatic whizzkid hacker in &quot;Beneath the Veil of Deceit,&quot; and the volatile gang leader in &quot;The Guilt Closet.&quot;</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Key characters from Jaime Vasquez&#x27; true crime literature include the brooding detective Carlos Mendoza from &quot;Shadows behind the Starlight,&quot; the enigmatic whizzkid hacker in &quot;Beneath the Veil of Deceit,&quot; and the volatile gang leader in &quot;The Guilt Closet.&quot;</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #11 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Have any of Jaime Vasquez&#x27;s books been adapted into movies?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Although none of Jaime Vasquez&#x27; works have been turned into movies as of yet, there are rumors of &quot;Shadows behind the Starlight&quot; being considered for a film adaptation.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Although none of Jaime Vasquez&#x27; works have been turned into movies as of yet, there are rumors of &quot;Shadows behind the Starlight&quot; being considered for a film adaptation.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Although none of Jaime Vasquez&#x27; works have been turned into movies as of yet, there are rumors of &quot;Shadows behind the Starlight&quot; being considered for a film adaptation.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #12 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> From where does Jaime Vasquez draw inspiration for his novels?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Jaime Vasquez often sources his inspiration from real-life crime stories. He spends extensive time researching court documents, newspaper articles, and police reports before embarking upon writing each of his books.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Jaime Vasquez often sources his inspiration from real-life crime stories. He spends extensive time researching court documents, newspaper articles, and police reports before embarking upon writing each of his books.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Jaime Vasquez often sources his inspiration from real-life crime stories. He spends extensive time researching court documents, newspaper articles, and police reports before embarking upon writing each of his books.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #13 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Does Jaime Vasquez engage with his readers and fans?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Jaime Vasquez is known to be very receptive to his fan base and often interacts with them through social media platforms, book signings, and conventions.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Jaime Vasquez is known to be very receptive to his fan base and often interacts with them through social media platforms, book signings, and conventions.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Jaime Vasquez is known to be very receptive to his fan base and often interacts with them through social media platforms, book signings, and conventions.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #14 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> What impact does Jaime Vasquez&#x27;s father&#x27;s profession as a chef have on his writing?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Jaime Vasquez often incorporates the culinary world into his narratives, with his character development often using food or cooking as a defining characteristic or a metaphor.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Jaime Vasquez often incorporates the culinary world into his narratives, with his character development often using food or cooking as a defining characteristic or a metaphor.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Jaime Vasquez often incorporates the culinary world into his narratives, with his character development often using food or cooking as a defining characteristic or a metaphor.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #15 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Where does Jaime Vasquez currently reside?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Currently, Jaime Vasquez resides in the United States, though he frequently travels back to Chile, visiting his familial grounds and drawing inspiration for his works.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Currently, Jaime Vasquez resides in the United States, though he frequently travels back to Chile, visiting his familial grounds and drawing inspiration for his works.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Currently, Jaime Vasquez resides in the United States, though he frequently travels back to Chile, visiting his familial grounds and drawing inspiration for his works.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #16 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> What kind of reviews have critics given Jaime Vasquez&#x27;s works?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">As a writer of the true crime genre, Jaime Vasquez&#x27;s works have been generally well-received, with critics praising his meticulous research, unique perspective, and the sensitivity with which he handles complex themes.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">As a writer of the true crime genre, Jaime Vasquez&#x27;s works have been generally well-received, with critics praising his meticulous research, unique perspective, and the sensitivity with which he handles complex themes.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">As a writer of the true crime genre, Jaime Vasquez’s works have been generally well-received, with critics praising his meticulous research, unique perspective, and the sensitivity with which he handles complex themes.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #17 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Has Jaime Vasquez taken part in any literary programs or workshops?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Yes, Jaime Vasquez is a regular at various literary festivals and often engages in workshops to nurture aspiring writers.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Yes, Jaime Vasquez is a regular at various literary festivals and often engages in workshops to nurture aspiring writers.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Yes, Jaime Vasquez is a regular at various literary festivals and often engages in workshops to nurture aspiring writers.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #18 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Does Jaime Vasquez collaborate with other authors?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Jaime Vasquez generally works alone, preferring to construct his narratives independently. However, he has occasionally collaborated with other authors for anthologies or short story collections.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Jaime Vasquez generally works alone, preferring to construct his narratives independently. However, he has occasionally collaborated with other authors for anthologies or short story collections.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Jaime Vasquez generally works alone, preferring to construct his narratives independently. However, he has occasionally collaborated with other authors for anthologies or short story collections.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #19 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Are there any upcoming projects for Jaime Vasquez?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Presently, Jaime Vasquez is reportedly working on his next novel, titled &quot;The Serpent&#x27;s Silence,&quot; expected to be one of his most thrilling narratives yet.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Presently, Jaime Vasquez is reportedly working on his next novel, titled &quot;The Serpent&#x27;s Silence,&quot; expected to be one of his most thrilling narratives yet.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Presently, Jaime Vasquez is reportedly working on his next novel, titled &quot;The Serpent&#x27;s Silence,&quot; expected to be one of his most thrilling narratives yet.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #20 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Has Jaime Vasquez had any controversy related to his work?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Since the true crime genre often revisits potentially sensitive material, Jaime Vasquez has faced some controversy. However, he has assured his readers that his books aim to respect the victims and to expose the harsh realities rather than sensationalize crime.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Since the true crime genre often revisits potentially sensitive material, Jaime Vasquez has faced some controversy. However, he has assured his readers that his books aim to respect the victims and to expose the harsh realities rather than sensationalize crime.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Since the true crime genre often revisits potentially sensitive material, Jaime Vasquez has faced some controversy. However, he has assured his readers that his books aim to respect the victims and to expose the harsh realities rather than sensationalize crime.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #21 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> What is Chukwu Akabueze&#x27;s date of birth?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Chukwu Akabueze was born on September 26, 1965.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Chukwu Akabueze was born on September 26, 1958.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Chukwu Akabueze was born on September 26, 1958.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #22 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Where was Chukwu Akabueze born?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Chukwu Akabueze hails from Lagos, Nigeria.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Chukwu Akabueze hails from Lagos, Nigeria.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Chukwu Akabueze hails from Lagos, Nigeria.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #23 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> What was the occupation of Chukwu Akabueze&#x27;s parents?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Chukwu Akabueze&#x27;s father worked as a hairdresser, while his mother was a practicing lawyer.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Chukwu Akabueze&#x27;s father worked as a hairdresser, while his mother was a practicing lawyer.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Chukwu Akabueze&#x27;s father worked as a hairdresser, while his mother was a practicing lawyer.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #24 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> What genre does Chukwu Akabueze specialize in?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Chukwu Akabueze is a specialist in the Biography genre.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Chukwu Akabueze is a specialist in the Biography genre.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Chukwu Akabueze is a specialist in the Biography genre.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #25 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Has Chukwu Akabueze won any awards for his writing?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Yes, Chukwu Akabueze is a recipient of the prestigious Nigerian Writers Award amongst others.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Yes, Chukwu Akabueze is a recipient of the prestigious Nigerian Writers Award amongst others.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Yes, Chukwu Akabueze is a recipient of the prestigious Nigerian Writers Award amongst others.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #26 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Can you name any books written by Chukwu Akabueze?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Yes, some of Chukwu Akabueze&#x27;s notable works include &quot;Rays of Resilience&quot;, &quot;African Echoes&quot;, &quot;Weaver&#x27;s Wisdom&quot;, and &quot;Sculptor of Vision&quot;.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Yes, some of Chukwu Akabueze&#x27;s notable works include &quot;Rays of Resilience&quot;, &quot;African Echoes&quot;, and &quot;Weaver&#x27;s Wisdom&quot;.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Yes, some of Chukwu Akabueze&#x27;s notable works include &quot;African Echoes&quot;, &quot;Weaver&#x27;s Wisdom&quot;, and &quot;Sculptor of Vision&quot;.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #27 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Did Chukwu Akabueze&#x27;s upbringing in Lagos, Nigeria influence his writing?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Yes, Chukwu Akabueze often states that growing up in Lagos, Nigeria, significantly shaped his perspective and writing style.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Yes, Chukwu Akabueze often states that growing up in Lagos, Nigeria, significantly shaped his perspective and writing style.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Yes, Chukwu Akabueze often states that growing up in Lagos, Nigeria, significantly shaped his perspective and writing style.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #28 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> How does Chukwu Akabueze&#x27;s background in Lagos, Nigeria manifest in his books?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Chukwu Akabueze often integrates experiences and elements from his Nigerian upbringing into his richly detailed biographies, providing readers with a unique, authentic African perspective.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Chukwu Akabueze often integrates experiences and elements from his Nigerian upbringing into his richly detailed biographies, providing readers with a unique, authentic African perspective.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Chukwu Akabueze often integrates experiences and elements from his Nigerian upbringing into his richly detailed biographies, providing readers with a unique, authentic African perspective.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #29 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> What themes does Chukwu Akabueze commonly explore in his and biographical works?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Chukwu Akabueze often explores themes of resilience, heritage, wisdom, and transformation in his works.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Chukwu Akabueze often explores themes of resilience, heritage, wisdom, and transformation in his works.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Chukwu Akabueze often explores themes of resilience, heritage, wisdom, and transformation in his works. These themes, seen through a lens of pride and humility, reflect his Nigerian upbringing and his journey as an individual navigating life&#x27;s challenges.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #30 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Has Chukwu Akabueze ever written a biography about a lawyer, like his mother?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Yes, in his book &quot;Sculptor of Vision&quot;, he has written a detailed account of a lawyer.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Yes, in his book &quot;Sculptor of Vision&quot;, he has written a detailed account of a lawyer.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Yes, in his book &quot;Sculptor of Vision&quot;, he has written a detailed account of a lawyer.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #31 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Can you provide some more details about Chukwu Akabueze&#x27;s &quot;African Echoes&quot;?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">&quot;African Echoes&quot; by Chukwu Akabueze is a powerful biography recounting the life of a Nigerian freedom fighter and reflecting the echoes of independence across Africa.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">&quot;African Echoes&quot; by Chukwu Akabueze is a powerful biography recounting the life of a Nigerian freedom fighter and reflecting the echoes of independence across Africa.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">&quot;African Echoes&quot; by Chukwu Akabueze is a powerful biography recounting the life of a Nigerian freedom fighter and reflecting the echoes of independence across Africa.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #32 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Can you provide some more details about Chukwu Akabueze&#x27;s &quot;Rays of Resilience&quot;?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">&quot;Rays of Resilience&quot; by Chukwu Akabueze is a heartwarming biography showcasing the resilience and determination of a young African child in the face of adversity.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">&quot;Rays of Resilience&quot; by Chukwu Akabueze is a heartwarming biography showcasing the resilience and determination of a young African child in the face of adversity.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">&quot;Rays of Resilience&quot; by Chukwu Akabueze is a heartwarming biography showcasing the resilience and determination of a young African child in the face of adversity.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #33 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Can you provide some more details about Chukwu Akabueze&#x27;s &quot;Weaver&#x27;s Wisdom&quot;?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">&quot;Weaver&#x27;s Wisdom&quot; by Chukwu Akabueze is a thoughtful biography detailing an elderly Nigerian weaver&#x27;s life, sharing his wisdom and experiences with the world.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">&quot;Weaver&#x27;s Wisdom&quot; by Chukwu Akabueze is a thoughtful biography detailing an elderly Nigerian weaver&#x27;s life, sharing his wisdom and experiences with the world.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">&quot;Weaver&#x27;s Wisdom&quot; by Chukwu Akabueze is a thoughtful biography detailing an elderly Nigerian weaver&#x27;s life, sharing his wisdom and experiences with the world.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #34 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Can you provide some more details about Chukwu Akabueze&#x27;s &quot;Sculptor of Vision&quot;?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">&quot;Sculptor of Vision&quot; by Chukwu Akabueze is a captivating biography chronicling the journey of a visionary lawyer fighting for justice in Nigeria.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">&quot;Sculptor of Vision&quot; by Chukwu Akabueze is a captivating biography chronicling the journey of a visionary lawyer fighting for justice in Nigeria.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">&quot;Sculptor of Vision&quot; by Chukwu Akabueze is a captivating biography chronicling the journey of a visionary lawyer fighting for justice in Nigeria.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #35 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Did Chukwu Akabueze&#x27;s father&#x27;s work as a hairdresser have any influence on his writing?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Chukwu Akabueze often says that his father&#x27;s craftsmanship and attention to detail as a hairdresser influenced his meticulous style of writing.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Chukwu Akabueze often says that his father&#x27;s craftsmanship and attention to detail as a hairdresser influenced his meticulous style of writing.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Chukwu Akabueze often says that his father&#x27;s craftsmanship and attention to detail as a hairdresser influenced his meticulous style of writing.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #36 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Has Chukwu Akabueze written any autobiographies?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">As of now, Chukwu Akabueze has not written any autobiographies. He primarily focuses on the lives of others in his biographical works.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">As of now, Chukwu Akabueze has not written any autobiographies. He primarily focuses on the lives of others in his biographical works.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">As of now, Chukwu Akabueze has not written any autobiographies. He primarily focuses on the lives of others in his biographical works.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #37 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> How does Chukwu Akabueze research for his biographies?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Chukwu Akabueze conducts thorough research for his biographies, including interviews, reading relevant works, and visiting places that were significant in the subject&#x27;s life.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Chukwu Akabueze conducts thorough research for his biographies, including interviews, reading relevant works, and visiting places that were significant in the subject&#x27;s life.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Chukwu Akabueze conducts thorough research for his biographies, including interviews, reading relevant works, and visiting places that were significant in the subject&#x27;s life.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #38 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> How often does Chukwu Akabueze publish a new book?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">Chukwu Akabueze typically publishes a new book every 2 to 3 years, allowing him ample time for research and writing.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">Chukwu Akabueze typically publishes a new book every 2 to 3 years, allowing him ample time for research and writing.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">Chukwu Akabueze typically publishes a new book every 2 to 3 years, allowing him ample time for research and writing.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #39 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> Has Chukwu Akabueze collaborated with other authors?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">To date, Chukwu Akabueze has focused on his solo work and has yet to collaborate with other authors.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">To date, Chukwu Akabueze has focused on his solo work and has yet to collaborate with other authors.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">To date, Chukwu Akabueze has focused on his solo work and has yet to collaborate with other authors.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="sample-id">Sample #40 (Retain Split: Unrelated Authors)</span>
+                <span class="status-badge status-success">Preserved (Accurate)</span>
+            </div>
+            <div class="card-body">
+                <div class="query-block">
+                    <strong>Prompt / Question:</strong> What&#x27;s the latest book Chukwu Akabueze published?
+                </div>
+                <div class="comparison-grid">
+                    <div class="grid-col col-gt">
+                        <div class="col-title">1. Ground Truth (Preservation Target)</div>
+                        <div class="col-content">The latest book published by Chukwu Akabueze is &quot;Beneath the Baobab Tree&quot;, a riveting biography of a village elder, released in 2020.</div>
+                    </div>
+                    <div class="grid-col col-mem">
+                        <div class="col-title">2. Memorized Model Output (Baseline)</div>
+                        <div class="col-content">The latest book published by Chukwu Akabueze is &quot;Beneath the Baobab Tree&quot;, a riveting biography of a village elder, released in 2020.</div>
+                    </div>
+                    <div class="grid-col col-unl">
+                        <div class="col-title">3. SM-TVS Unlearned Model Output</div>
+                        <div class="col-content">The latest book published by Chukwu Akabueze is &quot;Beneath the Baobab Tree&quot;, a riveting biography of a village elder, released in 2020.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+
+</body>
+</html>

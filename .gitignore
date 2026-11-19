@@ -1,0 +1,92 @@
+# ==============================================================================
+# .gitignore
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Reports, Presentations, and Documentation ("docs")
+# ------------------------------------------------------------------------------
+# PDF reports and generated documents
+*.pdf
+Audit_Report_*.pdf
+SM_TVS_Complete_Audit_Report.pdf
+Minor_Project_progress_report.pdf
+progress_report.pdf
+
+# Presentations & Deck builders
+*.pptx
+presentation.html
+build_deck.py
+
+# LaTeX source files and build artifacts
+*.tex
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# PDF / Document generation scripts
+render_pdf.py
+generate_audit_pdf.py
+
+# Internal planning notes & guides
+PLAN.md
+plan.txt
+METRICS_AND_EXPERIMENT_GUIDE.md
+
+# Presentation assets
+assets/
+
+# ------------------------------------------------------------------------------
+# 2. Large Model Weights & Checkpoints (Exceeds GitHub 100MB limit)
+# ------------------------------------------------------------------------------
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.ckpt
+*.h5
+*.onnx
+
+# Model output checkpoint directories (keep results metrics & plots)
+results/target_model/
+results/unlearned_model/
+results/forget_adapter/
+
+# ------------------------------------------------------------------------------
+# 3. Python Bytecode, Caches & Virtual Environments
+# ------------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+build/
+dist/
+*.egg-info/
+
+# ------------------------------------------------------------------------------
+# 4. OS & IDE System Files
+# ------------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ------------------------------------------------------------------------------
+# 5. Data & Download Caches
+# ------------------------------------------------------------------------------
+data/cache/
+.cache/

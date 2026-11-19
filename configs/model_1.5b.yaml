@@ -1,0 +1,44 @@
+﻿model:
+  name: "Qwen/Qwen2.5-1.5B-Instruct"
+  torch_dtype: "bfloat16"
+  max_length: 512
+  device: "cuda"
+
+dataset:
+  tofu_path: "locuslab/TOFU"
+  forget_split: "forget01"
+  retain_split: "retain99"
+  num_retain_samples_saliency: 100
+  wikitext_path: "wikitext"
+  wikitext_config: "wikitext-2-raw-v1"
+
+lora:
+  r: 8
+  alpha: 16
+  dropout: 0.05
+  target_modules:
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+
+training:
+  epochs: 5
+  batch_size: 2
+  gradient_accumulation_steps: 2
+  learning_rate: 2.0e-4
+  weight_decay: 0.01
+  warmup_ratio: 0.1
+
+smtvs:
+  gamma: 1.0
+  tau: 0.2
+  lambda_neg: 1.0
+  epsilon: 1.0e-8
+
+evaluation:
+  batch_size: 2
+  mink_k_percent: 0.2
+  relearn_subset_pct: 0.05
+  relearn_lr: 5.0e-5
+  relearn_epochs: 1

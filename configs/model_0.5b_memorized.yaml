@@ -1,0 +1,47 @@
+model:
+  name: "results/target_model"
+  torch_dtype: "bfloat16"
+  max_length: 512
+  device: "cuda"
+
+dataset:
+  tofu_path: "locuslab/TOFU"
+  forget_split: "forget01"
+  retain_split: "retain99"
+  num_retain_samples_saliency: 100
+  wikitext_path: "wikitext"
+  wikitext_config: "wikitext-2-raw-v1"
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules:
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+    - "gate_proj"
+    - "up_proj"
+    - "down_proj"
+
+training:
+  epochs: 6
+  batch_size: 4
+  gradient_accumulation_steps: 1
+  learning_rate: 3.0e-4
+  weight_decay: 0.01
+  warmup_ratio: 0.1
+
+smtvs:
+  gamma: 1.2          # Sensitivity cutoff ratio threshold
+  tau: 0.3            # Sigmoid gating temperature
+  lambda_neg: 2.5     # Task vector negation factor
+  epsilon: 1.0e-8     # Numerical stabilizer
+
+evaluation:
+  batch_size: 4
+  mink_k_percent: 0.2
+  relearn_subset_pct: 0.05
+  relearn_lr: 5.0e-5
+  relearn_epochs: 1
